@@ -9,6 +9,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import kotlinx.android.synthetic.main.activity_main.*
@@ -38,6 +39,22 @@ class MainActivity : AppCompatActivity() {
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             val id = intent?.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
+            when (id) {
+                DownloadManager.STATUS_PAUSED.toLong() -> Log.v("DOWNLOAD STATUE", "STATUS_PAUSED")
+                DownloadManager.STATUS_PENDING.toLong() -> Log.v(
+                    "DOWNLOAD STATUE",
+                    "STATUS_PENDING"
+                )
+                DownloadManager.STATUS_RUNNING.toLong() -> Log.v(
+                    "DOWNLOAD STATUE",
+                    "STATUS_RUNNING"
+                )
+                DownloadManager.STATUS_SUCCESSFUL.toLong() -> Log.v(
+                    "DOWNLOAD STATUE",
+                    "STATUS_SUCCESSFUL"
+                )
+                DownloadManager.STATUS_FAILED.toLong() -> Log.v("DOWNLOAD STATUE", "STATUS_FAILED")
+            }
         }
     }
 
