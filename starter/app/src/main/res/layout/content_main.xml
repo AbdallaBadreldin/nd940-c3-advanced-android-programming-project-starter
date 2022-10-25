@@ -45,19 +45,22 @@
             android:id="@+id/radioButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="RadioButton" />
+            android:minHeight="48dp"
+            android:text="@string/glide_image_loading_library_by_bumptech" />
 
         <RadioButton
             android:id="@+id/radioButton2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="RadioButton" />
+            android:minHeight="48dp"
+            android:text="@string/loadapp_current_repository_by_udacity" />
 
         <RadioButton
             android:id="@+id/radioButton3"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="RadioButton" />
+            android:minHeight="48dp"
+            android:text="@string/retrofit_type_safe_http_client_for_android_and_java_by_sequence_inc" />
     </RadioGroup>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
