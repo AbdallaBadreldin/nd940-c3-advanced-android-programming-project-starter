@@ -5,6 +5,7 @@ import android.content.Context
 import android.graphics.*
 import android.text.StaticLayout
 import android.util.AttributeSet
+import android.util.Log
 import android.view.View
 import androidx.core.content.ContextCompat
 import kotlin.properties.Delegates
@@ -18,6 +19,7 @@ class LoadingButton @JvmOverloads constructor(
 
     private val valueAnimator = ValueAnimator()
     private lateinit var staticLayout: StaticLayout
+    private var buttonString:String
 
     var startTextX = this.widthSize / 2.toFloat()
     var startTextY = this.heightSize / 2.toFloat()
@@ -27,16 +29,17 @@ class LoadingButton @JvmOverloads constructor(
         isAntiAlias = true
         strokeWidth = resources.getDimension(R.dimen.strokeWidth)
         textSize = resources.getDimension(R.dimen.textSize)
+        textAlign = Paint.Align.CENTER
     }
 
     private var buttonState: ButtonState by Delegates.observable<ButtonState>(ButtonState.Completed) { p, old, new ->
-
+        Log.v("TAG OLD", old.toString())
+        Log.v("TAG P", p.toString())
+        Log.v("TAG NEW", new.toString())
+        invalidate()
     }
 
-
-    init {
-
-    }
+    init { buttonString = context.getString(R.string.download) }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
@@ -47,19 +50,41 @@ class LoadingButton @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
         this.setBackgroundColor(ContextCompat.getColor(this.context, R.color.cian))
-        drawTranslatedTextExample(canvas, context.getString(R.string.download))
+        drawTranslatedText(canvas, buttonString)
+    }
+
+    override fun performClick(): Boolean {
+        return super.performClick()
+//        drawTranslatedTextAndAnimateOval(canvas = canvas)
+    }
+
+    private fun drawTranslatedText(canvas: Canvas?, text: String) {
+
+        val bounds = Rect()
+        var text_height = 0
+        var text_width = 0
+
+        paint.getTextBounds(text, 0, text.length, bounds)
+
+        text_height = bounds.height()
+        text_width = bounds.width()
+
+        paint.color = Color.WHITE
+        canvas?.drawText(text, startTextX, startTextY, paint)
+
 
     }
 
-    private fun drawTranslatedTextExample(canvas: Canvas?, text: String) {
-        canvas?.save()
+    private fun drawTranslatedTextAndAnimateOval(canvas: Canvas?, text: String) {
+
         val paint = Paint()
         val bounds = Rect()
         var text_height = 0
         var text_width = 0
 
         paint.typeface = Typeface.DEFAULT // your preference here
-        paint.textSize = resources.getDimension(R.dimen.textSize) // have this the same as your text size
+        paint.textSize =
+            resources.getDimension(R.dimen.textSize) // have this the same as your text size
         paint.textAlign = Paint.Align.CENTER
         paint.getTextBounds(text, 0, text.length, bounds)
 
@@ -69,7 +94,7 @@ class LoadingButton @JvmOverloads constructor(
         paint.color = Color.WHITE
         canvas?.drawText(text, startTextX, startTextY, paint)
 
-        canvas?.restore()
+
     }
 
     /* private fun drawTranslatedTextExample(canvas: Canvas?, text: String) {

@@ -7,9 +7,12 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.database.Cursor
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.widget.RadioGroup
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import kotlinx.android.synthetic.main.activity_main.*
@@ -20,6 +23,8 @@ class MainActivity : AppCompatActivity() {
 
     private var downloadID: Long = 0
 
+    private lateinit var radioGroup: RadioGroup
+    private lateinit var loadingButton: LoadingButton
     private lateinit var notificationManager: NotificationManager
     private lateinit var pendingIntent: PendingIntent
     private lateinit var action: NotificationCompat.Action
@@ -29,36 +34,53 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
+
+        radioGroup = findViewById(R.id.radioGroup)
+        loadingButton = findViewById(R.id.custom_button)
         registerReceiver(receiver, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
 
         custom_button.setOnClickListener {
-            download()
+            Log.v("TAG ID", radioGroup.checkedRadioButtonId.toString())
+            when (radioGroup.checkedRadioButtonId) {
+                -1 -> Toast.makeText(
+                    this,
+                    getString(R.string.please_select_the_file_to_downlaod),
+                    Toast.LENGTH_LONG
+                ).show()
+                R.id.glide ->{ download("https://github.com/bumptech/glide", getString(R.string.glide_image_loading_library_by_bumptech))  }
+                R.id.loadApp ->{ download("https://github.com/udacity/nd940-c3-advanced-android-programming-project-starter",getString(R.string.loadapp_current_repository_by_udacity))}
+                R.id.retrofit -> {download("https://github.com/square/retrofit",getString(R.string.retrofit_type_safe_http_client_for_android_and_java_by_sequence_inc))   }
+            }
         }
     }
 
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             val id = intent?.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
-            when (id) {
-                DownloadManager.STATUS_PAUSED.toLong() -> Log.v("DOWNLOAD STATUE", "STATUS_PAUSED")
-                DownloadManager.STATUS_PENDING.toLong() -> Log.v(
-                    "DOWNLOAD STATUE",
-                    "STATUS_PENDING"
-                )
-                DownloadManager.STATUS_RUNNING.toLong() -> Log.v(
-                    "DOWNLOAD STATUE",
-                    "STATUS_RUNNING"
-                )
-                DownloadManager.STATUS_SUCCESSFUL.toLong() -> Log.v(
-                    "DOWNLOAD STATUE",
-                    "STATUS_SUCCESSFUL"
-                )
-                DownloadManager.STATUS_FAILED.toLong() -> Log.v("DOWNLOAD STATUE", "STATUS_FAILED")
+            if(id == downloadID ){
+              loadingButton
             }
-        }
-    }
+/*
+            val extras = intent?.extras;
+            val q =  DownloadManager.Query();
+            val downloadedID = extras?.getLong(DownloadManager.EXTRA_DOWNLOAD_ID)
+            if(downloadedID == downloadID ){ // so it is my file that has been completed
+                q.setFilterById(downloadedID);
+                val manager =context?.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+                val c:Cursor = manager.query(q);
+                if (c.moveToFirst()) {
+                    val status = c.getInt(c.getColumnIndex(DownloadManager.COLUMN_STATUS));
+                    if (status == DownloadManager.STATUS_SUCCESSFUL) {
+                        // do any thing here
+                    }
+                }
+                c.close();
 
-    private fun download() {
+
+        }
+*/    }}
+
+    private fun download(URL: String , file:String) {
         val request =
             DownloadManager.Request(Uri.parse(URL))
                 .setTitle(getString(R.string.app_name))
@@ -70,6 +92,12 @@ class MainActivity : AppCompatActivity() {
         val downloadManager = getSystemService(DOWNLOAD_SERVICE) as DownloadManager
         downloadID =
             downloadManager.enqueue(request)// enqueue puts the download request in the queue.
+
+        val prefs = getSharedPreferences("download", 0);
+        val editor = prefs.edit()
+        editor.putLong("download id",downloadID);
+        editor.putString("download file",file);
+        editor.apply();
     }
 
     companion object {

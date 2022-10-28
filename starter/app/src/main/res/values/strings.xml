@@ -15,4 +15,5 @@
     <string name="loadapp_current_repository_by_udacity">LoadApp - Current repository by Udacity</string>
     <string name="glide_image_loading_library_by_bumptech">Glide - Image Loading Library by BumpTech</string>
     <string name="download">Download</string>
+    <string name="please_select_the_file_to_downlaod">Please select the file to downlaod</string>
 </resources>
