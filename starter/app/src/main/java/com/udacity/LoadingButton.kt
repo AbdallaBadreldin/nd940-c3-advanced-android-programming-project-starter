@@ -5,8 +5,8 @@ import android.content.Context
 import android.graphics.*
 import android.text.StaticLayout
 import android.util.AttributeSet
-import android.util.Log
 import android.view.View
+import android.view.animation.LinearInterpolator
 import androidx.core.content.ContextCompat
 import kotlin.properties.Delegates
 
@@ -16,13 +16,22 @@ class LoadingButton @JvmOverloads constructor(
 ) : View(context, attrs, defStyleAttr) {
     private var widthSize = 0
     private var heightSize = 0
+    private var ovalAngle = 0F
 
     private val valueAnimator = ValueAnimator()
     private lateinit var staticLayout: StaticLayout
-    private var buttonString:String
-
+    private var buttonString: String
+    private lateinit var rectF: RectF
     var startTextX = this.widthSize / 2.toFloat()
     var startTextY = this.heightSize / 2.toFloat()
+
+    fun getSweepAngle(): Float {
+        return ovalAngle
+    }
+
+    fun setSweepAngle(angle: Float) {
+        ovalAngle = angle
+    }
 
     private val paint = Paint().apply {
         // Smooth out edges of what is drawn without affecting shape.
@@ -33,13 +42,41 @@ class LoadingButton @JvmOverloads constructor(
     }
 
     private var buttonState: ButtonState by Delegates.observable<ButtonState>(ButtonState.Completed) { p, old, new ->
-        Log.v("TAG OLD", old.toString())
-        Log.v("TAG P", p.toString())
-        Log.v("TAG NEW", new.toString())
-        invalidate()
+        if (old == ButtonState.Clicked && new == ButtonState.Loading) {
+            buttonString = context.getString(R.string.button_loading)
+            animateArc(ovalAngle, 270F, 5000)
+//            ValueAnimator.ofFloat(0F, 180F).apply {
+//                duration = 650
+//                interpolator = LinearInterpolator()
+//                addUpdateListener { valueAnimator ->
+//                    ovalAngle = valueAnimator.animatedValue as Float
+//                    invalidate()
+//                }
+//            }
+        } else if (old == ButtonState.Loading && new == ButtonState.Completed) {
+            animateArc(ovalAngle, 360F, 650)
+        }
+
+//        buttonString=context.getString(R.string.button_loading)
+//        invalidate()
+//        startAnimatingArc(50F)
+
     }
 
-    init { buttonString = context.getString(R.string.download) }
+    fun setButtonStatue(statue: ButtonState) {
+//        if (statue == ButtonState.Clicked && buttonState == ButtonState.Loading) {   //for Testing
+        if (statue == ButtonState.Clicked && buttonState == ButtonState.Loading || buttonState == statue) {
+//            Just Don't do anything'
+        } else {
+            buttonState = statue
+        }
+    }
+
+    init {
+        buttonString = context.getString(R.string.download)
+        buttonState = ButtonState.Completed
+        ovalAngle = 0F
+    }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
@@ -53,13 +90,8 @@ class LoadingButton @JvmOverloads constructor(
         drawTranslatedText(canvas, buttonString)
     }
 
-    override fun performClick(): Boolean {
-        return super.performClick()
-//        drawTranslatedTextAndAnimateOval(canvas = canvas)
-    }
-
     private fun drawTranslatedText(canvas: Canvas?, text: String) {
-
+        canvas?.save()
         val bounds = Rect()
         var text_height = 0
         var text_width = 0
@@ -72,7 +104,30 @@ class LoadingButton @JvmOverloads constructor(
         paint.color = Color.WHITE
         canvas?.drawText(text, startTextX, startTextY, paint)
 
+        rectF = RectF(
+            startTextX + text_width / 2.toFloat(),
+            startTextY - text_height.toFloat(),
+            startTextX + text_width / 2.toFloat() + 50F,
+            startTextY - text_height.toFloat() + 50F
+        )
+        paint.color = context.getColor(R.color.colorAccent)
+        canvas?.drawArc(rectF, 0F, ovalAngle, true, paint)
+        canvas?.restore() // for reviewer is it useful ?  <----------------------------------------
+    }
 
+    fun animateArc(fromAngle: Float, toAngle: Float, duration: Long) {
+        ValueAnimator.ofFloat(fromAngle, toAngle).apply {
+            this.duration = duration
+            interpolator = LinearInterpolator()  //it's animate Linearity in fixed speed
+            addUpdateListener { valueAnimator ->
+                ovalAngle = valueAnimator.animatedValue as Float
+                if (ovalAngle == 360F) {
+                    buttonString = context.getString(R.string.download)
+                    ovalAngle = 0F
+                }
+                invalidate()
+            }
+        }.start()
     }
 
     private fun drawTranslatedTextAndAnimateOval(canvas: Canvas?, text: String) {
@@ -93,7 +148,6 @@ class LoadingButton @JvmOverloads constructor(
 
         paint.color = Color.WHITE
         canvas?.drawText(text, startTextX, startTextY, paint)
-
 
     }
 
