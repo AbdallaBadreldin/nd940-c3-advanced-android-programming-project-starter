@@ -1,12 +1,16 @@
 package com.udacity
 
+import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.*
 import android.text.StaticLayout
 import android.util.AttributeSet
 import android.view.View
+import android.view.WindowManager.LayoutParams
+import android.view.animation.AccelerateInterpolator
 import android.view.animation.LinearInterpolator
+import android.widget.ImageView
 import androidx.core.content.ContextCompat
 import kotlin.properties.Delegates
 
@@ -25,14 +29,6 @@ class LoadingButton @JvmOverloads constructor(
     var startTextX = this.widthSize / 2.toFloat()
     var startTextY = this.heightSize / 2.toFloat()
 
-    fun getSweepAngle(): Float {
-        return ovalAngle
-    }
-
-    fun setSweepAngle(angle: Float) {
-        ovalAngle = angle
-    }
-
     private val paint = Paint().apply {
         // Smooth out edges of what is drawn without affecting shape.
         isAntiAlias = true
@@ -40,6 +36,24 @@ class LoadingButton @JvmOverloads constructor(
         textSize = resources.getDimension(R.dimen.textSize)
         textAlign = Paint.Align.CENTER
     }
+
+    private val loadingImage =ImageView(context).apply {
+        setBackgroundColor(context.getColor(R.color.white))
+        widthSize=this@LoadingButton.width
+        heightSize=this@LoadingButton.height
+    }
+
+    private val loadingPaint = Paint().apply {
+        isAntiAlias = true
+        strokeWidth = resources.getDimension(R.dimen.strokeWidth)
+        color = context.getColor(R.color.violate)
+        widthSize = width
+        heightSize = height
+    }
+
+    val loadingRect= Rect(0,0,width,height)
+
+    private val loadingPath = Path()
 
     private var buttonState: ButtonState by Delegates.observable<ButtonState>(ButtonState.Completed) { p, old, new ->
         if (old == ButtonState.Clicked && new == ButtonState.Loading) {
@@ -101,6 +115,9 @@ class LoadingButton @JvmOverloads constructor(
         text_height = bounds.height()
         text_width = bounds.width()
 
+        //Drawing Loading Progress bar for custom Button
+        canvas?.drawRect(0F,0F,ovalAngle*width/360,height.toFloat(),loadingPaint)
+
         paint.color = Color.WHITE
         canvas?.drawText(text, startTextX, startTextY, paint)
 
@@ -111,7 +128,8 @@ class LoadingButton @JvmOverloads constructor(
             startTextY - text_height.toFloat() + 50F
         )
         paint.color = context.getColor(R.color.colorAccent)
-        canvas?.drawArc(rectF, 0F, ovalAngle, true, paint)
+        canvas?.drawArc(rectF, 0F, ovalAngle, true, paint)  //our oval
+
         canvas?.restore() // for reviewer is it useful ?  <----------------------------------------
     }
 
@@ -126,11 +144,14 @@ class LoadingButton @JvmOverloads constructor(
                     ovalAngle = 0F
                 }
                 invalidate()
+//                val mover = ObjectAnimator.ofFloat(loadingImage, View.TRANSLATION_X,height.toFloat(),widthSize.toFloat())
+//                mover.interpolator = LinearInterpolator()  //it's animate Linearity in fixed speed
+//                mover.duration=duration
             }
         }.start()
     }
 
-    private fun drawTranslatedTextAndAnimateOval(canvas: Canvas?, text: String) {
+   /* private fun drawTranslatedTextAndAnimateOval(canvas: Canvas?, text: String) {
 
         val paint = Paint()
         val bounds = Rect()
@@ -149,7 +170,7 @@ class LoadingButton @JvmOverloads constructor(
         paint.color = Color.WHITE
         canvas?.drawText(text, startTextX, startTextY, paint)
 
-    }
+    }*/
 
     /* private fun drawTranslatedTextExample(canvas: Canvas?, text: String) {
          canvas?.save()
