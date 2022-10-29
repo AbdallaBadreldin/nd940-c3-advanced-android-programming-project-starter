@@ -1,6 +1,7 @@
 package com.udacity
 
 import android.app.DownloadManager
+import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
@@ -8,12 +9,13 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.widget.RadioGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 
@@ -33,10 +35,12 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
-
         radioGroup = findViewById(R.id.radioGroup)
         loadingButton = findViewById(R.id.custom_button)
         registerReceiver(receiver, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
+
+        //creating notification channel
+        createNotificationChannel()
 
         custom_button.setOnClickListener {
             custom_button.setButtonStatue(ButtonState.Clicked) //temporary for testing
@@ -73,9 +77,12 @@ class MainActivity : AppCompatActivity() {
             val id = intent?.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
             if (id == downloadID) {
                 loadingButton.setButtonStatue(ButtonState.Completed)
-
+                //also creating notification
+                buildNotification()
 
             }
+
+
 /*
             val extras = intent?.extras;
             val q =  DownloadManager.Query();
@@ -98,8 +105,34 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun buildNotification() {
+        // Create an explicit intent for an Activity in your app
+        val intent = Intent(this, DetailActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+         pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+       action= NotificationCompat.Action(R.drawable.ic_assistant_black_24dp,getString(R.string.notification_action),pendingIntent)
+
+
+        var builder = NotificationCompat.Builder(this, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_assistant_black_24dp)
+            .setContentTitle(getString(R.string.loadapp))
+            .setContentText(getString(R.string.notification_title))
+            .setStyle(NotificationCompat.BigTextStyle()
+                .bigText(getString(R.string.notification_description)))
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+            .addAction(action)
+
+        with(NotificationManagerCompat.from(this)) {
+            // notificationId is a unique int for each notification that you must define
+            notify(NOTIFICATION_ID, builder.build())
+        }
+    }
+
     private fun download(URL: String, file: String) {
-      /*  val request =
+        val request =
             DownloadManager.Request(Uri.parse(URL))
                 .setTitle(getString(R.string.app_name))
                 .setDescription(getString(R.string.app_description))
@@ -110,22 +143,37 @@ class MainActivity : AppCompatActivity() {
         val downloadManager = getSystemService(DOWNLOAD_SERVICE) as DownloadManager
         downloadID =
             downloadManager.enqueue(request)// enqueue puts the download request in the queue.
-*/
+
         custom_button.setButtonStatue(ButtonState.Loading)
 
-  /*      val prefs = getSharedPreferences("download", 0)
+        val prefs = getSharedPreferences("download", 0)
         val editor = prefs.edit()
         editor.putLong("download id", downloadID)
         editor.putString("download file", file)
         editor.apply()
-
-*/
     }
 
+    private fun createNotificationChannel() {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name = getString(R.string.channel_name)
+            val descriptionText = getString(R.string.channel_description)
+            val importance = NotificationManager.IMPORTANCE_DEFAULT
+            val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
+                description = descriptionText
+            }
+            // Register the channel with the system
+           notificationManager =
+                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+        }
+    }
     companion object {
         private const val URL =
             "https://github.com/udacity/nd940-c3-advanced-android-programming-project-starter/archive/master.zip"
         private const val CHANNEL_ID = "channelId"
+        private const val NOTIFICATION_ID = 48918
     }
 
 }

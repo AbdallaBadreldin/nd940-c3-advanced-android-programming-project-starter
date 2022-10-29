@@ -17,14 +17,6 @@ class DownloadCloudView @JvmOverloads constructor(
     }
 
     private val path = Path()
-//    private val columnOne = rectInset
-//    private val columnTwo = columnOne + rectInset + clipRectRight
-//
-//    private val rowOne = rectInset
-//    private val rowTwo = rowOne + rectInset + clipRectBottom
-//    private val rowThree = rowTwo + rectInset + clipRectBottom
-//    private val rowFour = rowThree + rectInset + clipRectBottom
-//    private val textRow = rowFour + (1.5f * clipRectBottom)
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
@@ -47,7 +39,6 @@ class DownloadCloudView @JvmOverloads constructor(
         paint.color = getColor(this.context,R.color.violate)
 
         canvas.drawRect(470F, 80F, 530F, 150F, paint);
-//        canvas.drawArc(400F,80F,600F,200F,paint)
 
         path.moveTo(450F,150F)
         path.lineTo(500F,200F)
