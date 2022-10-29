@@ -16,6 +16,7 @@ class LoadingButton @JvmOverloads constructor(
     private var widthSize = 0
     private var heightSize = 0
     private var ovalAngle = 0F
+    private var valueAnimater = ValueAnimator()
 
     private var buttonString: String
     private lateinit var rectF: RectF
@@ -44,6 +45,8 @@ class LoadingButton @JvmOverloads constructor(
             animateArc(ovalAngle, 270F, 5000)
 
         } else if (old == ButtonState.Loading && new == ButtonState.Completed) {
+            valueAnimater.removeAllUpdateListeners()
+            valueAnimater.cancel()
             animateArc(ovalAngle, 360F, 650)
         }
 
@@ -110,18 +113,18 @@ class LoadingButton @JvmOverloads constructor(
         toAngle: Float,
         duration: Long
     ) { //not private so user can specify what he wants
-        ValueAnimator.ofFloat(fromAngle, toAngle).apply {
-            this.duration = duration
-            interpolator = LinearInterpolator()  //it's animate Linearity in fixed speed
-            addUpdateListener { valueAnimator ->
-                ovalAngle = valueAnimator.animatedValue as Float
-                if (ovalAngle == 360F) {
-                    buttonString = context.getString(R.string.download)
-                    ovalAngle = 0F
-                }
-                invalidate()
+        valueAnimater.setFloatValues(fromAngle, toAngle)
+        valueAnimater.duration = duration
+        valueAnimater.interpolator = LinearInterpolator() //it's animate Linearity in fixed speed
+        valueAnimater.addUpdateListener { valueAnimator ->
+            ovalAngle = valueAnimator.animatedValue as Float
+            if (ovalAngle >= 360F) {
+                buttonString = context.getString(R.string.download)
+                ovalAngle = 0F
             }
-        }.start()
+            invalidate()
+        }
+        valueAnimater.start()
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
