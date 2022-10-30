@@ -19,4 +19,7 @@
     <string name="channel_name">name_of_channel</string>
     <string name="channel_description">description_of_channel</string>
     <string name="loadapp">LoadApp</string>
+    <string name="ok">Ok</string>
+    <string name="file_name">File name:</string>
+    <string name="status">Status:</string>
 </resources>

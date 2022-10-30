@@ -26,8 +26,8 @@ class DetailActivity : AppCompatActivity() {
         okButton = findViewById(R.id.button)
 
         val prefs = getSharedPreferences("download", 0)
-        val name = prefs.getString("download name", "")
-        val status = prefs.getString("download status", "Fail")
+        val name = prefs.getString("download name", "").toString()
+        val status = prefs.getString("download status", "Fail").toString()
 
         nameText.text = name
         statusText.text = status

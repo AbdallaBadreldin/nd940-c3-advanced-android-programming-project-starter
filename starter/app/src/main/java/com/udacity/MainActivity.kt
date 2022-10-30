@@ -110,7 +110,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         pendingIntent =
-            PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_MUTABLE)
+            PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
 
         action = NotificationCompat.Action(
             R.drawable.ic_assistant_black_24dp,
