@@ -1,5 +1,6 @@
 package com.udacity
 
+import android.app.NotificationManager
 import android.graphics.Color
 import android.os.Bundle
 import android.widget.Button
@@ -16,6 +17,9 @@ class DetailActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_detail)
         setSupportActionBar(toolbar)
+
+        val notificationManager = getSystemService(NotificationManager::class.java)
+        notificationManager.cancel(MainActivity.NOTIFICATION_ID)
 
         nameText = findViewById(R.id.name)
         statusText = findViewById(R.id.status)

@@ -18,11 +18,14 @@ class LoadingButton @JvmOverloads constructor(
     private var ovalAngle = 0F
     private var valueAnimater = ValueAnimator()
 
-    private var buttonString: String
+    private lateinit var buttonString: String
     private lateinit var rectF: RectF
     var startTextX = this.widthSize / 2.toFloat()
     var startTextY = this.heightSize / 2.toFloat()
+    var duration: Int = 5000
 
+    var text: String = ""
+    var loadingText: String = ""
     private val paint = Paint().apply {
         // Smooth out edges of what is drawn without affecting shape.
         isAntiAlias = true
@@ -41,8 +44,8 @@ class LoadingButton @JvmOverloads constructor(
 
     private var buttonState: ButtonState by Delegates.observable<ButtonState>(ButtonState.Completed) { p, old, new ->
         if (old == ButtonState.Clicked && new == ButtonState.Loading) {
-            buttonString = context.getString(R.string.button_loading)
-            animateArc(ovalAngle, 270F, 5000)
+            buttonString = loadingText
+            animateArc(ovalAngle, 270F, duration = duration.toLong())
 
         } else if (old == ButtonState.Loading && new == ButtonState.Completed) {
             valueAnimater.removeAllUpdateListeners()
@@ -53,7 +56,6 @@ class LoadingButton @JvmOverloads constructor(
     }
 
     fun setButtonStatue(statue: ButtonState) {
-//        if (statue == ButtonState.Clicked && buttonState == ButtonState.Loading) {   //for Testing
         if (statue == ButtonState.Clicked && buttonState == ButtonState.Loading || buttonState == statue) {
 //            Just Don't do anything'
         } else {
@@ -62,9 +64,22 @@ class LoadingButton @JvmOverloads constructor(
     }
 
     init {
-        buttonString = context.getString(R.string.download)
         buttonState = ButtonState.Completed
         ovalAngle = 0F
+        context.theme.obtainStyledAttributes(
+            attrs,
+            R.styleable.LoadingButton,
+            0, 0
+        ).apply {
+            try {
+                text = getString(R.styleable.LoadingButton_text).toString()
+                loadingText = getString(R.styleable.LoadingButton_loadingText).toString()
+                duration = getInt(R.styleable.LoadingButton_duration, 5000)
+                buttonString = text
+            } finally {
+                recycle()
+            }
+        }
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
@@ -80,7 +95,6 @@ class LoadingButton @JvmOverloads constructor(
     }
 
     private fun drawTranslatedText(canvas: Canvas?, text: String) {
-        canvas?.save()
         val bounds = Rect()
         var textHeight = 0
         var textWidth = 0
@@ -104,8 +118,6 @@ class LoadingButton @JvmOverloads constructor(
         )
         paint.color = context.getColor(R.color.colorAccent)
         canvas?.drawArc(rectF, 0F, ovalAngle, true, paint)  //our oval
-
-        canvas?.restore() // for reviewer is it useful ?  <----------------------------------------
     }
 
     fun animateArc(
@@ -119,7 +131,7 @@ class LoadingButton @JvmOverloads constructor(
         valueAnimater.addUpdateListener { valueAnimator ->
             ovalAngle = valueAnimator.animatedValue as Float
             if (ovalAngle >= 360F) {
-                buttonString = context.getString(R.string.download)
+                buttonString = text
                 ovalAngle = 0F
             }
             invalidate()
